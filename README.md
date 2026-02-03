@@ -8,6 +8,16 @@ Este projeto demonstra a construção de um pipeline de dados ponta a ponta, int
 - **Visualização:** Apache Zeppelin
 - **Transformação:** SQL (PostgreSQL JSONB)
 
+## 📥 Ingestão de Dados (Airbyte)
+Para a fase de extração e carga (EL), utilizei o  **Airbyte Cloud:**
+- **Source:** Conectado ao MongoDB Atlas (Replica Set).
+- **Destination:** PostgreSQL no Supabase.
+- **Sync Mode:** Incremental Append + Dedup (ou Full Refresh para este lab), garantindo que os documentos NoSQL fossem mapeados para colunas `JSONB` na tabela `raw_movies`.
+  
+## ⚙️ Orquestração e Transformação (Airflow)
+- **Automação:** DAGs desenvolvidas em Python para automatizar a camada de transformação.
+- **SQL Moderno:** Uso de lógica `CASE WHEN` e `CAST` para extrair dados de objetos JSON complexos e transformá-los em tipos relacionais (`float`, `int`, `text`).
+
 ## 🏗️ Arquitetura do Projeto
 O pipeline segue os princípios da **Medallion Architecture:**
 - **Bronze (Raw):** Ingestão bruta de documentos JSON do MongoDB para tabelas `raw_` no PostgreSQL.
@@ -30,6 +40,9 @@ CASE
 END as rating
 ```
 ## 📊 Resultados
-- **Pipeline Automatizado:** DAGs do Airflow configuradas com sucesso.
-- **Dados Estruturados:** Visualização limpa no editor do Supabase.
-- **Insights Gerados:** Dashboards funcionais no Apache Zeppelin.
+- **Conectividade Cloud-to-Cloud:** Ingestão bem-sucedida de documentos JSON provenientes de uma instância do **MongoDB Atlas** para o **PostgreSQL no Supabase**. 
+- **Mapeamento NoSQL para Relacional:** Configuração do Airbyte para persistir os dados na tabela `raw_movies`, preservando a estrutura original em colunas `JSONB` para processamento posterior.
+- **Resiliência e Escalabilidade:** Utilização de uma ferramenta líder de mercado para garantir a integridade dos metadados durante a migração entre diferentes paradigmas de banco de dados. <br><img src="images/Airbyte.jpg" alt="Airbyte" width="600"/>
+- **Pipeline Automatizado:** DAGs do Airflow configuradas com sucesso. <img src="images/Airflow.jpg" alt="Airflow" width="600"/>
+- **Dados Estruturados:** Visualização limpa no editor do Supabase. <img src="images/Supabase-dados-limpos.jpg" alt="Supabase" width="600"/>
+- **Insights Gerados:** Dashboards funcionais no Apache Zeppelin. <img src="images/zeppelin.jpg" alt="Apache-Zeppelin" width="600"/>
