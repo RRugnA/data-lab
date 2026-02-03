@@ -1,6 +1,8 @@
 from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
 from airflow.operators.postgres_operator import PostgresOperator
-from datetime import datetime, timedelta
+from datetime import datetime
+from utils.export_tools import export_silver_to_csv
 
 default_args = {
   'owner': 'raphael',
@@ -9,7 +11,7 @@ default_args = {
 }
 
 with DAG(
-  '02_mongo_to_silver_supabase_null_treatment',
+  '02_mongo_to_silver_supabase_null_treatment_and_export_csv',
   default_args = default_args,
   schedule_interval = '@daily',
   catchup = False
@@ -40,4 +42,10 @@ with DAG(
     """
   )
 
-  transform_raw_to_silver
+  # Nova tarefa de exportação
+  task_export_csv = PythonOperator(
+   task_id='export_csv_to_databricks_upload',
+    python_callable=export_silver_to_csv
+  )
+
+  transform_raw_to_silver >> task_export_csv
