@@ -1,4 +1,22 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Airflow
+logs/
+airflow-worker-logs/
+unittests.db
+airflow.db
+webserver_config.py
+
+# Docker
+.env
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
