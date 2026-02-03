@@ -1,0 +1,47 @@
+services:
+  # FONTE 1: Banco Relacional (Simulando Oracle/Postgres original)
+  postgres:
+    image: postgres:13
+    container_name: lab-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    networks:
+      - data-network
+
+  # FERRAMENTA DE TESTES: Apache Zeppelin (Seu laboratório de SQL/Spark)
+  zeppelin:
+    image: apache/zeppelin:0.10.1
+    container_name: lab-zeppelin
+    ports:
+      - "8082:8080"
+    environment:
+      - ZEPPELIN_ADDR=0.0.0.0
+    networks:
+      - data-network
+
+  # ORQUESTRADOR: Airflow (Para agendar as tarefas)
+  airflow:
+    image: puckel/docker-airflow:1.10.9
+    container_name: lab-airflow
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - FERNET_KEY=js_f993D_X9KOf9P_N_9A-97_Y8Hs9D_f993D_X9KOf=
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@lab-postgres:5432/airflow
+    depends_on:
+      - postgres
+    networks:
+      - data-network
+
+networks:
+  data-network:
+    driver: bridge
