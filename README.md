@@ -43,6 +43,6 @@ END as rating
 - **Conectividade Cloud-to-Cloud:** Ingestão bem-sucedida de documentos JSON provenientes de uma instância do **MongoDB Atlas** para o **PostgreSQL no Supabase**. 
 - **Mapeamento NoSQL para Relacional:** Configuração do Airbyte para persistir os dados na tabela `raw_movies`, preservando a estrutura original em colunas `JSONB` para processamento posterior.
 - **Resiliência e Escalabilidade:** Utilização de uma ferramenta líder de mercado para garantir a integridade dos metadados durante a migração entre diferentes paradigmas de banco de dados. <br><img src="images/Airbyte.jpg" alt="Airbyte" width="600"/>
-- **Pipeline Automatizado:** DAGs do Airflow configuradas com sucesso. <img src="images/Airflow.jpg" alt="Airflow" width="600"/>
+- **Pipeline Automatizado:** DAGs do Airflow configuradas com sucesso. <img src="images/Airflow 2.jpg" alt="Supabase" width="600"/>
 - **Dados Estruturados:** Visualização limpa no editor do Supabase. <img src="images/Supabase-dados-limpos.jpg" alt="Supabase" width="600"/>
 - **Insights Gerados:** Dashboards funcionais no Apache Zeppelin. <img src="images/zeppelin.jpg" alt="Apache-Zeppelin" width="600"/>
