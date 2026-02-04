@@ -67,6 +67,19 @@ END AS rating
 
 ---
 
+## ⏳ Time Travel e Versionamento de Dados (Delta Lake)
+
+Como parte da camada analítica, foi implementado **Time Travel utilizando Delta Lake**, permitindo:
+- Auditoria de alterações ao longo do tempo.
+- Recuperação de versões históricas dos dados.
+- Comparação entre estados antigos e atuais das tabelas analíticas.
+
+A funcionalidade foi validada por meio de consultas a versões específicas da tabela, garantindo rastreabilidade e confiabilidade do dado — um requisito essencial em ambientes de dados governados.
+
+> Exemplo de uso: consultas a versões anteriores para análise de regressão de métricas e validação de correções de dados.
+
+---
+
 ## 📊 Resultados
 - **Conectividade Cloud‑to‑Cloud:** Ingestão bem‑sucedida do **MongoDB Atlas** para o **PostgreSQL no Supabase**.
 - **Mapeamento NoSQL → Relacional:** Persistência de dados em `JSONB` com posterior normalização.
@@ -76,22 +89,15 @@ END AS rating
 
 <p align="center">
   <img src="images/Airbyte.jpg" alt="Airbyte" width="600" />
-  <img src="images/Airflow.jpg" alt="Airflow" width="600" />
-  <img src="images/Supabase-dados-limpos.jpg" alt="Supabase" width="600" />
+  <img src="images/Airflow 2.jpg" alt="Airflow" width="600" />
+  <img src="images/Databricks-Describe-History.jpg" alt="Databricks" width="600" />
   <img src="images/zeppelin.jpg" alt="Apache Zeppelin" width="600" />
 </p>
 
 ---
 
 ## 🔮 Próximos Passos
-- Evoluir a camada **Gold** para um **Lakehouse com Delta Lake**.
-- Implementar **versionamento de dados (Time Travel)**.
-- Adicionar **testes de qualidade de dados** e **observabilidade**.
-
----
-
-## 👤 Autor
-Raphael Rugna
-
-Engenharia de Dados | Big Data | Airflow | Databricks | SQL | Python
+- Expandir o uso de **Time Travel** para cenários de rollback automatizado.
+- Implementar **testes de qualidade de dados** (Great Expectations / Soda).
+- Adicionar **observabilidade do pipeline** (SLAs, alertas e métricas).
 
