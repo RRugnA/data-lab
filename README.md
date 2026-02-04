@@ -1,48 +1,97 @@
-# Data Pipeline: MongoDB to Supabase (Medallion Architecture)
-Este projeto demonstra a construção de um pipeline de dados ponta a ponta, integrando fontes NoSQL locais/nuvem a um Data Warehouse moderno no PostgreSQL (Supabase), orquestrado por Apache Airflow.
+# Data Pipeline: MongoDB → Lakehouse (Medallion Architecture)
+
+Este projeto demonstra a construção de um **pipeline de dados end‑to‑end**, integrando uma fonte **NoSQL (MongoDB Atlas)** a um ambiente analítico moderno, com **orquestração via Apache Airflow**, **ingestão com Airbyte** e **camadas Medallion (Bronze/Silver/Gold)**. O foco está em **qualidade de dados, escalabilidade e governança**.
+
+> Projeto apresentado em um post no LinkedIn (link nos comentários do post).
+
+---
 
 ## 🚀 Tecnologias Utilizadas
-- **Ingestão:** Airbyte Cloud
+- **Ingestão (EL):** Airbyte Cloud
 - **Orquestração:** Apache Airflow (Docker)
-- **Banco de Dados:** MongoDB Atlas (Fonte) & Supabase / PostgreSQL (Destino)
-- **Visualização:** Apache Zeppelin
-- **Transformação:** SQL (PostgreSQL JSONB)
+- **Fonte:** MongoDB Atlas (Replica Set)
+- **Camada Relacional (Silver):** Supabase / PostgreSQL
+- **Processamento Analítico:** SQL (PostgreSQL / JSONB)
+- **Analytics:** Apache Zeppelin
+
+---
 
 ## 📥 Ingestão de Dados (Airbyte)
-Para a fase de extração e carga (EL), utilizei o  **Airbyte Cloud:**
-- **Source:** Conectado ao MongoDB Atlas (Replica Set).
+Para a fase de extração e carga (EL), foi utilizado o **Airbyte Cloud**:
+- **Source:** MongoDB Atlas (Replica Set).
 - **Destination:** PostgreSQL no Supabase.
-- **Sync Mode:** Incremental Append + Dedup (ou Full Refresh para este lab), garantindo que os documentos NoSQL fossem mapeados para colunas `JSONB` na tabela `raw_movies`.
-  
+- **Sync Mode:** Incremental Append + Dedup *(Full Refresh utilizado neste laboratório)*.
+- **Persistência:** Documentos NoSQL mapeados para colunas `JSONB` na tabela `raw_movies`, preservando a estrutura original para transformações posteriores.
+
+---
+
 ## ⚙️ Orquestração e Transformação (Airflow)
-- **Automação:** DAGs desenvolvidas em Python para automatizar a camada de transformação.
-- **SQL Moderno:** Uso de lógica `CASE WHEN` e `CAST` para extrair dados de objetos JSON complexos e transformá-los em tipos relacionais (`float`, `int`, `text`).
+- **Automação:** DAGs em Python para controlar a execução das transformações.
+- **Transformação (Silver):** Limpeza, padronização e tipagem de dados.
+- **SQL Moderno:** Uso de `CASE WHEN`, `CAST` e operadores JSON (`->`, `->>`) para converter estruturas JSON complexas em colunas relacionais (`FLOAT`, `INT`, `TEXT`).
+
+---
 
 ## 🏗️ Arquitetura do Projeto
-O pipeline segue os princípios da **Medallion Architecture:**
-- **Bronze (Raw):** Ingestão bruta de documentos JSON do MongoDB para tabelas `raw_` no PostgreSQL.
-- **Silver (Clean):** Transformação e tipagem de dados via Airflow, convertendo campos JSONB em colunas relacionais.
-- **Gold (Analytics):** Visualização de métricas de filmes e notas para consumo de BI.
+O pipeline segue os princípios da **Medallion Architecture**, com uma adaptação híbrida:
+
+- **Bronze (Raw):** Ingestão bruta de documentos JSON do MongoDB em tabelas `raw_` no PostgreSQL.
+- **Silver (Clean):** Transformações e tipagem via Airflow, extraindo campos JSONB para colunas relacionais no PostgreSQL.
+- **Gold (Analytics):** Consumo analítico e visualização no Apache Zeppelin.
+
+> Observação: a arquitetura Medallion foi aplicada de forma híbrida, utilizando PostgreSQL como camada intermediária antes do consumo analítico.
+
+---
 
 ## 🛠️ Desafios Técnicos Superados
-**1. Autenticação SCRAM-SHA-256 (Authentication Type 10)**
-Ao conectar ferramentas locais ao Supabase, identifiquei uma incompatibilidade de handshake. Resolvi o problema atualizando os **artifacts JDBC** para a versão `42.5.4` e configurando a string de conexão com parâmetros de `tenant/project ID`.
 
-**2. Tratamento de Qualidade de Dados (Null Treatment)**
-Implementei lógica de `CASE WHEN` em SQL para tratar strings vazias vindas da fonte NoSQL, garantindo que a conversão para `FLOAT` e `INT` não quebrasse as ferramentas de visualização.
+### 1️⃣ Autenticação SCRAM‑SHA‑256 (Authentication Type 10)
+Ao conectar ferramentas locais ao Supabase, foi identificada uma incompatibilidade de handshake JDBC.
 
+**Solução:**
+- Atualização do driver JDBC para a versão **42.5.4**.
+- Ajuste da string de conexão com parâmetros corretos de **tenant/project ID**.
+
+### 2️⃣ Tratamento de Qualidade de Dados (Null Treatment)
+Alguns campos vinham como **strings vazias** a partir da fonte NoSQL, quebrando conversões numéricas.
+
+**Solução:**
+Implementação de lógica defensiva em SQL para garantir conversões seguras:
+
+```sql
+CASE
+    WHEN (imdb->>'rating') = '' THEN NULL
+    ELSE (imdb->>'rating')::float
+END AS rating
 ```
-SQL
 
-CASE 
-    WHEN (imdb->>'rating') = '' THEN NULL 
-    ELSE (imdb->>'rating')::float 
-END as rating
-```
+---
+
 ## 📊 Resultados
-- **Conectividade Cloud-to-Cloud:** Ingestão bem-sucedida de documentos JSON provenientes de uma instância do **MongoDB Atlas** para o **PostgreSQL no Supabase**. 
-- **Mapeamento NoSQL para Relacional:** Configuração do Airbyte para persistir os dados na tabela `raw_movies`, preservando a estrutura original em colunas `JSONB` para processamento posterior.
-- **Resiliência e Escalabilidade:** Utilização de uma ferramenta líder de mercado para garantir a integridade dos metadados durante a migração entre diferentes paradigmas de banco de dados. <br><img src="images/Airbyte.jpg" alt="Airbyte" width="600"/>
-- **Pipeline Automatizado:** DAGs do Airflow configuradas com sucesso. <img src="images/Airflow.jpg" alt="Airflow" width="600"/>
-- **Dados Estruturados:** Visualização limpa no editor do Supabase. <img src="images/Supabase-dados-limpos.jpg" alt="Supabase" width="600"/>
-- **Insights Gerados:** Dashboards funcionais no Apache Zeppelin. <img src="images/zeppelin.jpg" alt="Apache-Zeppelin" width="600"/>
+- **Conectividade Cloud‑to‑Cloud:** Ingestão bem‑sucedida do **MongoDB Atlas** para o **PostgreSQL no Supabase**.
+- **Mapeamento NoSQL → Relacional:** Persistência de dados em `JSONB` com posterior normalização.
+- **Pipeline Automatizado:** DAGs do Airflow executando transformações de forma reprodutível.
+- **Dados Prontos para Análise:** Estrutura limpa e tipada para consumo analítico.
+- **Insights Gerados:** Dashboards funcionais no Apache Zeppelin.
+
+<p align="center">
+  <img src="images/Airbyte.jpg" alt="Airbyte" width="600" />
+  <img src="images/Airflow.jpg" alt="Airflow" width="600" />
+  <img src="images/Supabase-dados-limpos.jpg" alt="Supabase" width="600" />
+  <img src="images/zeppelin.jpg" alt="Apache Zeppelin" width="600" />
+</p>
+
+---
+
+## 🔮 Próximos Passos
+- Evoluir a camada **Gold** para um **Lakehouse com Delta Lake**.
+- Implementar **versionamento de dados (Time Travel)**.
+- Adicionar **testes de qualidade de dados** e **observabilidade**.
+
+---
+
+## 👤 Autor
+Raphael Rugna
+
+Engenharia de Dados | Big Data | Airflow | Databricks | SQL | Python
+
